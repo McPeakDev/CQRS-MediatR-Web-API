@@ -27,13 +27,13 @@ namespace CqrsMediatrNotesAPI.Controllers {
 
         [HttpPost]
         public async Task<ActionResult> AddNote([FromBody] Note note) {
-            await _mediator.Send(new AddNoteCommand(note));
-            return StatusCode(201);
+            var result = await _mediator.Send(new AddNoteCommand(note));
+            return result ? StatusCode(201) : StatusCode(409);
         }
 
         public async Task<ActionResult> UpdateNote([FromBody] Note note) {
             var result = await _mediator.Send(new UpdateNoteCommand(note));
-            return result ? StatusCode(204) : StatusCode(201);
+            return result ? StatusCode(200) : StatusCode(409);
         }
 
         [HttpDelete("{id:int}", Name = "DeleteNote")]

@@ -9,6 +9,7 @@ namespace CqrsMediatrNotesAPI.Repositories
 
         private readonly WriteNotesContext _db;
         private readonly DbSet<Note> _notes;
+        private readonly TextWriter _errorWriter = Console.Error;
 
         private async Task<Note?> GetNoteById(int id) => await _notes.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -19,43 +20,63 @@ namespace CqrsMediatrNotesAPI.Repositories
 
         public bool AddNote(Note note)
         {
-            _notes.Add(note);
+            var changeCount = -1;
 
-            _db.SaveChanges();
-            
-            return true;
+            try {
+                _notes.Add(note);
+
+                changeCount = _db.SaveChanges();
+            } catch (Exception ex) {
+                //Could add in Logging to a file here.
+                _errorWriter.WriteLine(ex.ToString());
+            }
+
+            return changeCount != -1;
         }
 
         public async Task<bool> UpdateNote(Note note)
         {
-            var found = await GetNoteById(note.Id);
+            var changeCount = -1;
 
-            if (found != null)
-            {
-                _notes.Update(note);
+            try {
+                var found = await GetNoteById(note.Id);
+
+                if (found != null)
+                {
+                    _notes.Update(note);
+                }
+                else
+                {
+                    _notes.Add(note);
+                }
+
+                changeCount = _db.SaveChanges();
+            } catch (Exception ex) {
+                //Could add in Logging to a file here.
+                _errorWriter.WriteLine(ex.ToString());
             }
-            else
-            {
-                _notes.Add(note);
-            }
 
-            _db.SaveChanges();
-
-            return found != null;
+            return changeCount != -1;
         }
 
         public async Task<bool> DeleteNote(int id)
         {
-            var found = await GetNoteById(id);
+            var changeCount = -1;
 
-            if (found != null)
-            {
-                _notes.Remove(found);
+            try {
+                var found = await GetNoteById(id);
+
+                if (found != null) {
+                    _notes.Remove(found);
+                }
+
+                changeCount = _db.SaveChanges();
+            } catch (Exception ex) {
+                //Could add in Logging to a file here.
+                _errorWriter.WriteLine(ex.ToString());
             }
 
-            _db.SaveChanges();
-
-            return found != null;
+            return changeCount != -1;
         }
     }
 }
