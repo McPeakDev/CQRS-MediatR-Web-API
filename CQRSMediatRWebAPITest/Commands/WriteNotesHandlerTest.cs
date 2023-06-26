@@ -6,16 +6,18 @@ using CqrsMediatrNotesAPI.Queries;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using Moq;
+using System;
+using System.Linq.Expressions;
 
 namespace CQRSMediatRWebAPITest.Queries
 {
     public class WriteNotesHandlerTest {
 
-        private Mock<IWriteNotesRepository> _writeRepo;
-        private IEnumerable<Note>? _notes;
+        private readonly Mock<IWriteRepository<Note>> _writeRepo;
+        private readonly IEnumerable<Note>? _notes;
         public WriteNotesHandlerTest()
         {
-            _writeRepo = new Mock<IWriteNotesRepository>();
+            _writeRepo = new Mock<IWriteRepository<Note>>();
             _notes = new List<Note> {
                 new Note {
                     Id = 1,
@@ -30,16 +32,16 @@ namespace CQRSMediatRWebAPITest.Queries
             };
 
             _writeRepo
-                .Setup(r => r.AddNote(It.IsAny<Note>()))
+                .Setup(r => r.Add(It.IsAny<Note>()))
                 .Callback((Note note) => {
                     _notes.As<List<Note>>().Add(note);
                 })
                 .Returns(true);
 
             _writeRepo
-                .Setup(r => r.UpdateNote(It.IsAny<Note>()))
-                .Callback((Note note) => {
-                    var index = _notes.As<List<Note>>().FindIndex(n => n.Id == note.Id);
+                .Setup(r => r.Update(It.IsAny<Note>(), It.IsAny<Func<Note, int>>()))
+                .Callback((Note note, Func<Note, int> predicate) => {
+                    var index = _notes.As<List<Note>>().FindIndex(n => predicate(n) == note.Id);
                     if (index != -1) {
                         _notes.As<List<Note>>()[index] = note;
                     } else {
@@ -49,9 +51,9 @@ namespace CQRSMediatRWebAPITest.Queries
                 .Returns(Task.FromResult(true));
 
             _writeRepo
-                .Setup(r => r.DeleteNote(It.IsAny<int>()))
-                .Callback((int id) => {
-                    var note = _notes.As<List<Note>>().Find(n => n.Id == id);
+                .Setup(r => r.Delete(It.IsAny<int>(), It.IsAny<Func<Note, int>>()))
+                .Callback((int id, Func<Note, int> predicate) => {
+                    var note = _notes.As<List<Note>>().Find(n => predicate(n) == id);
                     if (note != null) {
                         _notes.As<List<Note>>().Remove(note);
                     }

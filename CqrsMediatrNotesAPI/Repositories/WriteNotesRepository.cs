@@ -2,28 +2,29 @@
 using CqrsMediatrNotesAPI.Contexts;
 using Microsoft.EntityFrameworkCore;
 using CqrsMediatrNotesAPI.Interfaces;
+using System.Linq.Expressions;
 
 namespace CqrsMediatrNotesAPI.Repositories
 {
-    public class WriteNotesRepository: IWriteNotesRepository {
+    public class WriteRepository<T>: IWriteRepository<T> where T: class {
 
-        private readonly WriteNotesContext _db;
-        private readonly DbSet<Note> _notes;
+        private readonly NotesContext _db;
+        private readonly DbSet<T> _dataSet;
         private readonly TextWriter _errorWriter = Console.Error;
 
-        private async Task<Note?> GetNoteById(int id) => await _notes.FirstOrDefaultAsync(p => p.Id == id);
+        private async Task<T?> FindByID(int id, Func<T, int> predicate) => (await _dataSet.ToListAsync()).Find(n => predicate(n) == id);
 
-        public WriteNotesRepository(WriteNotesContext db) {
+        public WriteRepository(WriteNotesContext db) {
             _db = db;
-            _notes = db.Set<Note>();
+            _dataSet = db.Set<T>();
         }
 
-        public bool AddNote(Note note)
+        public bool Add(T data)
         {
             var changeCount = -1;
 
             try {
-                _notes.Add(note);
+                _dataSet.Add(data);
 
                 changeCount = _db.SaveChanges();
             } catch (Exception ex) {
@@ -34,20 +35,21 @@ namespace CqrsMediatrNotesAPI.Repositories
             return changeCount != -1;
         }
 
-        public async Task<bool> UpdateNote(Note note)
+        public async Task<bool> Update(T data, Func<T, int> findPredicate)
         {
             var changeCount = -1;
+            var id = findPredicate.Invoke(data);
 
             try {
-                var found = await GetNoteById(note.Id);
+                var found = await FindByID(id, findPredicate);
 
                 if (found != null)
                 {
-                    _notes.Update(note);
+                    _dataSet.Update(data);
                 }
                 else
                 {
-                    _notes.Add(note);
+                    _dataSet.Add(data);
                 }
 
                 changeCount = _db.SaveChanges();
@@ -59,15 +61,15 @@ namespace CqrsMediatrNotesAPI.Repositories
             return changeCount != -1;
         }
 
-        public async Task<bool> DeleteNote(int id)
+        public async Task<bool> Delete(int id, Func<T, int> findPredicate)
         {
             var changeCount = -1;
 
             try {
-                var found = await GetNoteById(id);
+                var found = await FindByID(id, findPredicate);
 
                 if (found != null) {
-                    _notes.Remove(found);
+                    _dataSet.Remove(found);
                 }
 
                 changeCount = _db.SaveChanges();

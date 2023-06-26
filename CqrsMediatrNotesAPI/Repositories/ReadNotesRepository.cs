@@ -5,16 +5,16 @@ using CqrsMediatrNotesAPI.Interfaces;
 
 namespace CqrsMediatrNotesAPI.Repositories
 {
-    public class ReadNotesRepository: IReadNotesRepository {
+    public class ReadRepository<T>: IReadRepository<T> where T: class {
 
-        private readonly DbSet<Note> _notes;
+        private readonly DbSet<T> _dataSet;
 
-        public ReadNotesRepository(ReadNotesContext db) {
-            _notes = db.Set<Note>();
+        public ReadRepository(ReadNotesContext db) {
+            _dataSet = db.Set<T>();
         }
 
-        public async Task<Note?> GetNoteById(int id) => await _notes.FirstOrDefaultAsync<Note>(p => p.Id == id);
+        public async Task<T?> FindById(int id, Func<T, int> predicate) => (await _dataSet.ToListAsync()).Find(n => predicate(n) == id);
 
-        public async Task<IEnumerable<Note>?> GetAllNotes() => await Task.FromResult(_notes.Any() ? _notes: null);
+        public async Task<IEnumerable<T>?> GetAllNotes() => await Task.FromResult(_dataSet.Any() ? _dataSet : null);
     }
 }

@@ -1,5 +1,6 @@
 using CqrsMediatrNotesAPI.Contexts;
 using CqrsMediatrNotesAPI.Interfaces;
+using CqrsMediatrNotesAPI.Models;
 using CqrsMediatrNotesAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,16 +13,18 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ReadNotesContext>();
 builder.Services.AddDbContext<WriteNotesContext>();
-builder.Services.AddTransient<IReadNotesRepository, ReadNotesRepository>();
-builder.Services.AddTransient<IWriteNotesRepository, WriteNotesRepository>();
+builder.Services.AddDbContext<SyncNotesContext>();
+
+builder.Services.AddScoped<IReadRepository<Note>, ReadRepository<Note>>();
+builder.Services.AddScoped<IWriteRepository<Note>, WriteRepository<Note>>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope()) {
-    using var readNotesContext = scope.ServiceProvider.GetRequiredService<ReadNotesContext>();
-    using var writeNotesContext = scope.ServiceProvider.GetRequiredService<WriteNotesContext>();
+    var readNotesContext = scope.ServiceProvider.GetRequiredService<ReadNotesContext>();
+    var writeNotesContext = scope.ServiceProvider.GetRequiredService<WriteNotesContext>();
 
     readNotesContext.Database.EnsureCreated();
     writeNotesContext.Database.EnsureCreated();

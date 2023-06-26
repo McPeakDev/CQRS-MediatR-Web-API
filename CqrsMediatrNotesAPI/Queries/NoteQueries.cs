@@ -8,5 +8,4 @@ namespace CqrsMediatrNotesAPI.Queries {
 
     public record GetNoteByIdQuery(int Id) : IRequest<Note?>;
 
-
 }

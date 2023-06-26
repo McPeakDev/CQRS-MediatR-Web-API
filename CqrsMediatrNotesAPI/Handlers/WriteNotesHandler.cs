@@ -1,47 +1,48 @@
 ﻿using CqrsMediatrNotesAPI.Commands;
 using CqrsMediatrNotesAPI.Interfaces;
+using CqrsMediatrNotesAPI.Models;
 using MediatR;
 
 namespace CqrsMediatrNotesAPI.Handlers
 {
     public class AddNoteHandler : IRequestHandler<AddNoteCommand, bool> {
-        private readonly IWriteNotesRepository _writeRepo;
+        private readonly IWriteRepository<Note> _writeRepo;
 
-        public AddNoteHandler(IWriteNotesRepository writeRepo){
+        public AddNoteHandler(IWriteRepository<Note> writeRepo){
             _writeRepo = writeRepo;
         }
 
         public async Task<bool> Handle(AddNoteCommand request, CancellationToken cancellationToken)
         {
-            return await Task.FromResult(_writeRepo.AddNote(request.Note));
+            return await Task.FromResult(_writeRepo.Add(request.Note));
         }
     }
 
     public class UpdateNoteHandler : IRequestHandler<UpdateNoteCommand, bool>
     {
-        private readonly IWriteNotesRepository _writeRepo;
+        private readonly IWriteRepository<Note> _writeRepo;
 
-        public UpdateNoteHandler(IWriteNotesRepository writeRepo) {
+        public UpdateNoteHandler(IWriteRepository<Note> writeRepo) {
             _writeRepo = writeRepo;
         }
 
         public async Task<bool> Handle(UpdateNoteCommand request, CancellationToken cancellationToken)
         {
-            return await _writeRepo.UpdateNote(request.Note);
+            return await _writeRepo.Update(request.Note, n => n.Id);
         }
     }
 
     public class DeleteNoteHandler : IRequestHandler<DeleteNoteCommand, bool>
     {
-        private readonly IWriteNotesRepository _writeRepo;
+        private readonly IWriteRepository<Note> _writeRepo;
 
-        public DeleteNoteHandler(IWriteNotesRepository writeRepo) {
+        public DeleteNoteHandler(IWriteRepository<Note> writeRepo) {
             _writeRepo = writeRepo;
         }
 
         public async Task<bool> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
         {
-            return await _writeRepo.DeleteNote(request.Id);
+            return await _writeRepo.Delete(request.Id, n => n.Id);
         }
     }
 }

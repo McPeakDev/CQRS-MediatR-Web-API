@@ -9,11 +9,11 @@ namespace CQRSMediatRWebAPITest.Queries
 {
     public class ReadNotesHandlerTest {
 
-        private Mock<IReadNotesRepository> _readRepo;
-        private IEnumerable<Note>? _notes;
+        private readonly Mock<IReadRepository<Note>> _readRepo;
+        private readonly IEnumerable<Note>? _notes;
         public ReadNotesHandlerTest()
         {
-            _readRepo = new Mock<IReadNotesRepository>();
+            _readRepo = new Mock<IReadRepository<Note>>();
             _notes = new List<Note> {
                 new Note {
                     Id = 1,
@@ -33,8 +33,8 @@ namespace CQRSMediatRWebAPITest.Queries
                 .Returns(Task.FromResult<IEnumerable<Note>?>(null));
 
             _readRepo
-                .Setup(r => r.GetNoteById(It.IsAny<int>()))
-                .Returns((int id) => Task.FromResult(_notes.As<List<Note>>().Find(n => n.Id == id)));
+                .Setup(r => r.FindById(It.IsAny<int>(), It.IsAny<Func<Note, int>>()))
+                .Returns((int id, Func<Note, int> predicate) => Task.FromResult(_notes.As<List<Note>>().Find(n => predicate(n) == id)));
         }
 
         [Fact]
