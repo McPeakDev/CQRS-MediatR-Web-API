@@ -16,8 +16,6 @@ namespace CqrsMediatrNotesAPI.Contexts {
 
     public class ReadNotesContext : NotesContext {};
 
-    public class SyncNotesContext : NotesContext {};
-
     public class WriteNotesContext : NotesContext {
         public WriteNotesContext() {
             DataSource = "notesWrite.sqlite";

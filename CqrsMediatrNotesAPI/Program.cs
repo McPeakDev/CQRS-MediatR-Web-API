@@ -13,7 +13,6 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ReadNotesContext>();
 builder.Services.AddDbContext<WriteNotesContext>();
-builder.Services.AddDbContext<SyncNotesContext>();
 
 builder.Services.AddScoped<IReadRepository<Note>, ReadRepository<Note>>();
 builder.Services.AddScoped<IWriteRepository<Note>, WriteRepository<Note>>();
