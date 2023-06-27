@@ -31,6 +31,7 @@ namespace CqrsMediatrNotesAPI.Controllers {
             return result ? StatusCode(201) : StatusCode(409);
         }
 
+        [HttpPut]
         public async Task<ActionResult> UpdateNote([FromBody] Note note) {
             var result = await _mediator.Send(new UpdateNoteCommand(note));
             return result ? StatusCode(200) : StatusCode(409);
