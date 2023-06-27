@@ -9,7 +9,7 @@ namespace CqrsMediatrNotesAPI.Repositories
 
         private readonly DbSet<T> _dataSet;
 
-        public ReadRepository(ReadNotesContext db) {
+        public ReadRepository(Context<Read, T> db) {
             _dataSet = db.Set<T>();
         }
 

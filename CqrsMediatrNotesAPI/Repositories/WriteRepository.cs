@@ -8,13 +8,13 @@ namespace CqrsMediatrNotesAPI.Repositories
 {
     public class WriteRepository<T>: IWriteRepository<T> where T: class {
 
-        private readonly NotesContext _db;
+        private readonly Context<Write, T> _db;
         private readonly DbSet<T> _dataSet;
         private readonly TextWriter _errorWriter = Console.Error;
 
         private async Task<T?> FindByID(int id, Func<T, int> predicate) => (await _dataSet.ToListAsync()).Find(n => predicate(n) == id);
 
-        public WriteRepository(WriteNotesContext db) {
+        public WriteRepository(Context<Write, T> db) {
             _db = db;
             _dataSet = db.Set<T>();
         }

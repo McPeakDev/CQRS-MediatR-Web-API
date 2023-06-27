@@ -5,20 +5,12 @@ using CqrsMediatrNotesAPI.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace CqrsMediatrNotesAPI.Contexts {
-    public class NotesContext : DbContext {
+
+    public record Write;
+    public record Read;
+
+    public class Context<T, To> : DbContext where To : class {
         public DbSet<Note> Notes { get; set; }
-
-        protected string DataSource { get; set; } = "notesRead.sqlite";
-
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source={DataSource}");
-    }
-
-    public class ReadNotesContext : NotesContext {};
-
-    public class WriteNotesContext : NotesContext {
-        public WriteNotesContext() {
-            DataSource = "notesWrite.sqlite";
-        }
+        public Context(DbContextOptions<Context<T, To>> options) : base(options) { }
     };
 }

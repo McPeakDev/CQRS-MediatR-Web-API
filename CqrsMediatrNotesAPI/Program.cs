@@ -2,6 +2,7 @@ using CqrsMediatrNotesAPI.Contexts;
 using CqrsMediatrNotesAPI.Interfaces;
 using CqrsMediatrNotesAPI.Models;
 using CqrsMediatrNotesAPI.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -11,8 +12,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ReadNotesContext>();
-builder.Services.AddDbContext<WriteNotesContext>();
+builder.Services.AddDbContext<Context<Read,Note>>( options => 
+    options.UseSqlite($"Data Source=notesRead.sqlite")
+);
+
+builder.Services.AddDbContext<Context<Write,Note>>( options => 
+    options.UseSqlite($"Data Source=notesWrite.sqlite")
+);
 
 builder.Services.AddScoped<IReadRepository<Note>, ReadRepository<Note>>();
 builder.Services.AddScoped<IWriteRepository<Note>, WriteRepository<Note>>();
@@ -22,8 +28,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope()) {
-    var readNotesContext = scope.ServiceProvider.GetRequiredService<ReadNotesContext>();
-    var writeNotesContext = scope.ServiceProvider.GetRequiredService<WriteNotesContext>();
+    var readNotesContext = scope.ServiceProvider.GetRequiredService<Context<Read,Note>>();
+    var writeNotesContext = scope.ServiceProvider.GetRequiredService<Context<Write,Note>>();
 
     readNotesContext.Database.EnsureCreated();
     writeNotesContext.Database.EnsureCreated();
