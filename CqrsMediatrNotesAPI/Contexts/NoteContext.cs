@@ -9,8 +9,8 @@ namespace CqrsMediatrNotesAPI.Contexts {
     public record Write;
     public record Read;
 
-    public class Context<T, To> : DbContext where To : class {
+    public class Context<ContextType, T> : DbContext where T : class {
         public DbSet<Note> Notes { get; set; }
-        public Context(DbContextOptions<Context<T, To>> options) : base(options) { }
+        public Context(DbContextOptions<Context<ContextType, T>> options) : base(options) { }
     };
 }
